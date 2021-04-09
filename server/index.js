@@ -5,7 +5,7 @@ const port = process.env.PORT || 3000;
 // Some fake data - usually this will come from database
 const authors = [
   {
-    id: 1,
+    id: "1",
     info: {
       name: "Joe Kelly",
       age: 32,
@@ -13,7 +13,7 @@ const authors = [
     }
   },
   {
-    id: 2,
+    id: "2",
     info: {
       name: "Mary Jane",
       age: 27,
@@ -38,7 +38,8 @@ const typeDefs = `
     gender: String
   }
   type Query {
-    getAuthors: [Author]
+    getAuthors: [Author],
+    getAuthor(id: ID): Author 
   }
 `;
 
@@ -49,7 +50,8 @@ const typeDefs = `
 // rest is taken care by our apollo server, it makes sure that right typeDefs are linked with right resolver
 const resolvers = {
   Query: {
-    getAuthors: () => authors
+    getAuthors: () => authors, // returns array of authors
+    getAuthor: (obj, { id }) => authors.find(author => author.id === id)  // returns an author object
   }
 }
 

@@ -7,6 +7,7 @@ npm install express graphql-tools apollo-server-express graphql core-js
 
 ## Run
 `npm run start`
+**Playground** - http://localhost:3000/graphql
 
 ## Issues with existing api approaches:
 - the technologies that allow client-server communication has evolved, the most common being SOAP and REST
@@ -16,3 +17,4 @@ npm install express graphql-tools apollo-server-express graphql core-js
 
 ## Guides
 - [GraphQL](guides/graphql.md)
+- [Server setup and queries](guides/serverSetup.md)
