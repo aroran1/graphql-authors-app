@@ -19,6 +19,9 @@
   "homepage": "https://github.com/aroran1/graphql-authors-app#readme",
   "dependencies": {
     "apollo-server-express": "^2.22.2",
-    "express": "^4.17.1"
+    "core-js": "^3.10.1",
+    "express": "^4.17.1",
+    "graphql": "^15.5.0",
+    "graphql-tools": "^7.0.4"
   }
 }
