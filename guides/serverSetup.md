@@ -251,3 +251,178 @@ query {
   }
 }
 ```
+
+## Arguments as variables
+We can supply the arguments as variables (instead of passing a static value) which means we can keep our query the same no matter the variables we pass along and because we pass them separatly our client side code can remain the same.
+```
+// Playground
+query ($authorId: ID!){
+  getAuthor(id: $authorId) {
+    id
+    info {
+      name
+      age
+    }
+  }
+}
+
+// QUERY VARIABLES passed in the playground
+{
+  "authorId": "2"
+}
+
+// Output
+{
+  "data": {
+    "getAuthor": {
+      "id": "2",
+      "info": {
+        "name": "Mary Jane",
+        "age": 27
+      }
+    }
+  }
+}
+```
+
+## Query Aliases (duplicated query)
+If we want to request 2 authors with the same field at the same time will end up with an error response.
+
+GraphQl doesn't permits querying or the same field with different arguments. `Error due to conflicting fields` || `Variable \"$authorIdB\" is never used.`
+The response is in JSON and in JSON you can not have 2 elements with the same key.
+
+```
+// Playground
+query ($authorIdA: ID!, $authorIdB: ID!){
+  getAuthor(id: $authorId) {
+    id
+    info {
+      name
+      age
+    }
+  }
+}
+// QUERY VARIABLES passed in the playground
+{
+  "authorIdA": "1",
+  "authorIdB": "2"
+}
+// OUTPUT
+{
+  "error": {
+    "errors": [
+      {
+        "message": "Variable \"$authorIdB\" is never used.",
+```
+Note if you just pass the 2 queries with the original setup, graphql will return the data of the last requested query.
+
+You can request the data for 2 different authors by passing the name aliases  and data will be returned against those aliases as keysto the query as below:
+```
+// Playground
+query ($authorIdA: ID!, $authorIdB: ID!){
+  author1: getAuthor(id: $authorIdA) {
+    id
+    info {
+      name
+      age
+    }
+  },
+  author2:  getAuthor(id: $authorIdB) {
+    id
+    info {
+      name
+      age
+    }
+  }
+}
+// QUERY VARIABLES passed in the playground
+{
+  "authorIdA": "1",
+  "authorIdB": "2"
+}
+// OUTPUT
+{
+  "data": {
+    "author1": {
+      "id": "1",
+      "info": {
+        "name": "Joe Kelly",
+        "age": 32
+      }
+    },
+    "author2": {
+      "id": "2",
+      "info": {
+        "name": "Mary Jane",
+        "age": 27
+      }
+    }
+  }
+}
+```
+
+## Fragments
+The above `query aliases` resolves the problem for getting data of 2 different authors but we have to duplicate the code. We can avoid repeating the same fields for athors by creating signular fragments on the returned type. This is particularly useful when we are reteriving many records.
+
+```
+// Playground
+query ($authorIdA: ID!, $authorIdB: ID!){
+  author1: getAuthor(id: $authorIdA) {
+    ...authorInfo
+  },
+  author2:  getAuthor(id: $authorIdB) {
+    ...authorInfo
+  }
+}
+// fragment created just underneath the query in the playground
+fragment authorInfo on Author {
+  id
+  info {
+    name
+    age
+  }
+}
+
+// QUERY VARIABLES passed in the playground
+{
+  "authorIdA": "1",
+  "authorIdB": "2"
+}
+// OUTPUT
+{
+  "data": {
+    "author1": {
+      "id": "1",
+      "info": {
+        "name": "Joe Kelly",
+        "age": 32
+      }
+    },
+    "author2": {
+      "id": "2",
+      "info": {
+        "name": "Mary Jane",
+        "age": 27
+      }
+    }
+  }
+}
+```
+
+**Inline Fragments**
+Fragments can also be inline but the downside is we can't reuse them.
+- Inline Fragments allows to query for specific properties on specific types.
+- Not as flexible as they can't be reused like regular fragments
+```
+query ModeOfTransport {
+  transportMode {
+    name
+    ... on Animal {
+      numberOfLegs
+    }
+    ... on Locomotive {
+      numberOfWheels
+    }
+  }
+}
+```
