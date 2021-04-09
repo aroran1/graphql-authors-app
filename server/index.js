@@ -22,12 +22,54 @@ const authors = [
   }
 ];
 
+// Schema - GraphQl schema (in string form) that we want api to return
+// ! - is for required
+// Query is a special type which defines what our client can request from the api via operations
+// here  getAuthors is an operation which returns an array of Authors
+// Note when someone calls the `getAuthors` query we will run the resolver with the same name
+const typeDefs = `
+  type Author {
+    id: ID!
+    info: Person
+  }
+  type Person {
+    name: String!
+    age: Int
+    gender: String
+  }
+  type Query {
+    getAuthors: [Author]
+  }
+`;
+
+// resolvers
+// resolvers is the code that makes things happen
+// when someone calls the query method we will run the resolver with the same name (which has to be identical)
+// that's how graphql know which code to run for which query
+// rest is taken care by our apollo server, it makes sure that right typeDefs are linked with right resolver
+const resolvers = {
+  Query: {
+    getAuthors: () => authors
+  }
+}
+
+// We create a new instance of ApolloServer and pass the tyepDefs and resolvers to put together schema or link the 2 together
+const server = new ApolloServer({ typeDefs, resolvers});
+
+// create a new express web server
 const app = express();
 
-app.use('/graphql', (req, res) => {
-  res.send('Welcome to our Authors App!'); // test it on http://localhost:3000/graphql
+// then we tell our apollo server to use the express server and expose `/graphQl` endpoint
+// instead of exposing the endpoint like express server as below
+// app.use('/graphql', (req, res) => {
+//   res.send('Welcome to our Authors App!'); // test it on http://localhost:3000/graphql
+// })
+server.applyMiddleware({
+  app,
+  path: '/graphql'
 })
 
 app.listen(port, () => {
-  console.log(`Server is listening to ${port}!`)
+  // console.log(`Server is listening to ${port}!`)
+  console.log(`Server is listening to http://localhost:${port}${server.graphqlPath}`)
 });
