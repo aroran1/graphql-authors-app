@@ -21,7 +21,10 @@
     "apollo-server-express": "^2.22.2",
     "core-js": "^3.10.1",
     "express": "^4.17.1",
-    "graphql": "^15.5.0",
     "graphql-tools": "^7.0.4"
+  },
+  "devDependencies": {
+    "express-graphql": "^0.12.0",
+    "graphql": "^15.5.0"
   }
 }

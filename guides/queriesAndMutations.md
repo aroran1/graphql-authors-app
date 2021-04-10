@@ -1,179 +1,49 @@
-# Server setup and Queries
-Queries are generally the GET oprations.
 
-### basic graphql api with express
-server/index-basic-graphql-express.js
-```
-const express = require('express');
-const port = process.env.PORT || 3000;
+# Queries and Mutations
 
-const app = express();
-
-app.use('/graphql', (req, res) => {
-  res.send('Welcome to our Authors App!'); // test it on http://localhost:3000/graphql
-})
-
-app.listen(port, () => {
-  console.log(`Server is listening to ${port}!`)
-});
+## Queries
+Queries are equvilant of the GET operations in REST.
 ```
-
-### graphql api with express and apollo
-server/index.js
-When server is ready, click on the `/graphql` link, that'll lead to apollo playground. This is similar to GraphQL created by FB. This tool is useful to quickly make queries to the api and see the results instanly.
-
-- import ApolloServer
-- add some fake authors data to be returned from resolvers `const authors = [{...}, {...}];`
-- Create typeDefs 
-  - by creating schemas for Author and Person
-  ```
-  const typeDefs = `
-    type Author {...}
-    type Person {...}
-  `;
-  ```
-  - type Query is a special type which defines what our client can call from the api with operations which is set to return an array of authors
-  ```
-  type Query {
-    getAuthors: [Author]
-  }
-  ```
-- Resolvers is where things get done, when the query operation is called graphql runs the resolver method (same name as query method) in the background. Connecting right resolver with right typeDefs is handled by apollo. When we create a new instance of the server, we pass both in.
-```
-const resolvers = {
-  Query: {
-    getAuthors: () => authors // returning the mocked authors array data
-  }
-}
-```
-
-- Create a new instance of `apolloserver` by `const server = new ApolloServer({ typeDefs, resolvers});` and pass the typeDefs and resolvers for it to link them together.
-- Create a new express web server `const app = express()`
-- On apollo server, applyMiddleware to let it use express server and expose the `/graphql` endpoint instead of express traditional way of `app.use('/graphql', (res, res => { res.send('mesage!')}))`
-```
-server.applyMiddleware({
-  app,
-  path: '/graphql'
-})
-```
-- Finally ruen `npm run start` and test it out on the apollo playground on http://localhost:3000/graphql
-```
-app.listen(port, () => {
-  // console.log(`Server is listening to ${port}!`)
-  console.log(`Server is listening to http://localhost:${port}${server.graphqlPath}`)
-});
-```
-Pass below query to see the data returned. Note that the structure of the response mirrors the 
-```
-query {
-  getAuthors {
-    info {
-      name
-      age
-    }
-  }
-}
-{
-  "data": {
-    "getAuthors": [
-      {
-        "info": {
-          "name": "Joe Kelly",
-          "age": 32
-        }
-      },
-      {
-        "info": {
-          "name": "Mary Jane",
-          "age": 27
-        }
-      }
-    ]
-  }
-}
-```
-
-server/index.js
-```
-const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
-const port = process.env.PORT || 3000;
-
-// Some fake data - usually this will come from database
-const authors = [
-  {
-    id: 1,
-    info: {
-      name: "Joe Kelly",
-      age: 32,
-      gender: "M",
-    }
-  },
-  {
-    id: 2,
-    info: {
-      name: "Mary Jane",
-      age: 27,
-      gender: "F",
-    }
-  }
-];
-
-// Schema - GraphQl schema (in string form) that we want api to return
-// ! - is for required
-// Query is a special type which defines what our client can request from the api via operations
-// here  getAuthors is an operation which returns an array of Authors
-// Note when someone calls the `getAuthors` query we will run the resolver with the same name
-const typeDefs = `
-  type Author {
-    id: ID!
-    info: Person
-  }
-  type Person {
-    name: String!
-    age: Int
-    gender: String
-  }
-  type Query {
-    getAuthors: [Author]
-  }
-`;
-
-// resolvers
-// resolvers is the code that makes things happen
-// when someone calls the query method we will run the resolver with the same name (which has to be identical)
-// that's how graphql know which code to run for which query
-// rest is taken care by our apollo server, it makes sure that right typeDefs are linked with right resolver
+// code - server/index.js
+const tyepDefs = `type Query {
+  getAuthors: [Authors]
+}`
 const resolvers = {
   Query: {
     getAuthors: () => authors
   }
 }
 
-// We create a new instance of ApolloServer and pass the tyepDefs and resolvers 
-// to put together schema or link the 2 together
-const server = new ApolloServer({ typeDefs, resolvers});
+// Playground
+query {
+  getAuthors {
+    info {
+      name
+    }
+  }
+}
 
-// create a new express web server
-const app = express();
+// OUTPUT
+{
+  "data": {
+    "getAuthors": [
+      {
+        "info": {
+          "name": "Joe Kelly"
+        }
+      },
+      {
+        "info": {
+          "name": "Mary Jane"
+        }
+      }
+    ]
+  }
+}
+```  
 
-// then we tell our apollo server to use the express server and expose `/graphQl` endpoint
-// instead of exposing the endpoint via app.use('/graphql', (req, res) => {...})
-// app.use('/graphql', (req, res) => {
-//   res.send('Welcome to our Authors App!'); // test it on http://localhost:3000/graphql
-// })
-server.applyMiddleware({
-  app,
-  path: '/graphql'
-})
 
-app.listen(port, () => {
-  // console.log(`Server is listening to ${port}!`)
-  console.log(`Server is listening to http://localhost:${port}${server.graphqlPath}`)
-});
-```
-
-## Named Query
+### Named Query
 Note that you can change the resolver name to anything as long as it matches the query operation name but if you neame it somelike liek `k` the it'll not make much sense in the code. For that type of instance you can make your query as names query with type query operation name as anything.
 ```
 // code - server/index.js
@@ -209,7 +79,7 @@ query getAuthors {
 
 ```  
 
-## Get a specific author Query
+### Get a specific author Query
 - Create a new query operation as `getAuthor` with id
 ```
 type Query {
@@ -253,7 +123,7 @@ query {
 }
 ```
 
-## Arguments as variables
+### Arguments as variables
 We can supply the arguments as variables (instead of passing a static value) which means we can keep our query the same no matter the variables we pass along and because we pass them separatly our client side code can remain the same.
 ```
 // Playground
@@ -286,7 +156,7 @@ query ($authorId: ID!){
 }
 ```
 
-## Query Aliases (duplicated query)
+### Query Aliases (duplicated query)
 If we want to request 2 authors with the same field at the same time will end up with an error response.
 
 GraphQl doesn't permits querying or the same field with different arguments. `Error due to conflicting fields` || `Variable \"$authorIdB\" is never used.`
