@@ -1,4 +1,5 @@
-# Server setup and queries
+# Server setup and Queries
+Queries are generally the GET oprations.
 
 ### basic graphql api with express
 server/index-basic-graphql-express.js
@@ -382,7 +383,6 @@ fragment authorInfo on Author {
     age
   }
 }
-
 // QUERY VARIABLES passed in the playground
 {
   "authorIdA": "1",
@@ -422,6 +422,305 @@ query ModeOfTransport {
     }
     ... on Locomotive {
       numberOfWheels
+    }
+  }
+}
+```
+
+## Directives
+GraphQl provides two inbuilt directives hat allows us to either include or skip one fields our results:
+- skip directive - @skip
+- include directive - @include
+
+### Skip
+We can retrieve our data but skip the age field for our first author if `skipAge` variable is set to true but the same value would eb available for the second data.
+
+```
+// Playground
+query ($authorIdA: ID!, $authorIdB: ID!, $skipAge: Boolean!){
+  author1: getAuthor(id: $authorIdA) {
+    id
+    info {
+      name
+      age @skip(if: $skipAge)
+    }
+  },
+  author2:  getAuthor(id: $authorIdB) {
+    id
+    info {
+      name
+      age
+    }
+  }
+}
+// QUERY VARIABLES passed in the playground
+{
+  "authorIdA": "1",
+  "authorIdB": "2",
+  "skipAge": true
+}
+// OUTPUT
+{
+  "data": {
+    "author1": {
+      "id": "1",
+      "info": {
+        "name": "Joe Kelly"
+      }
+    },
+    "author2": {
+      "id": "2",
+      "info": {
+        "name": "Mary Jane",
+        "age": 27
+      }
+    }
+  }
+}
+```
+
+### Include
+Same as skip directive we can use include optionally if the `includeGender` variable is set to true
+
+```
+// Playground
+query ($authorIdA: ID!, $authorIdB: ID!, $includeGender: Boolean!){
+  author1: getAuthor(id: $authorIdA) {
+    id
+    info {
+      name
+      age
+    }
+  },
+  author2:  getAuthor(id: $authorIdB) {
+    id
+    info {
+      name
+      age
+      gender @include(if: $includeGender)
+    }
+  }
+}
+// QUERY VARIABLES passed in the playground
+{
+  "authorIdA": "1",
+  "authorIdB": "2",
+  "skipAge": true
+}
+// OUTPUT
+{
+  "data": {
+    "author1": {
+      "id": "1",
+      "info": {
+        "name": "Joe Kelly",
+        "age": 32
+      }
+    },
+    "author2": {
+      "id": "2",
+      "info": {
+        "name": "Mary Jane",
+        "age": 27,
+        "gender": "F"
+      }
+    }
+  }
+}
+```
+
+## Mutation
+Queries in GraphQL are synonymous with GET request in traditional REST API's. Mutation on the other hand are like these REST operations: 
+- POST
+- PUT
+- PATCH
+- DELETE
+
+### POST / Create Mutation
+To create a new author we need to do as we did with queries:
+- Craete a new mutation type in the `typeDefs`
+```
+const typeDefs = `
+  ...
+  type Mutation {
+    createAuthor(name: String!, gender: String!): Author
+  }
+`;
+```
+- craete a new object and a resolver for the mutation
+```
+const resolvers = {
+  Query: {
+    getAuthors: () => authors, // returns array of authors
+    getAuthor: (obj, { id }) => authors.find(author => author.id === id)  // returns an author object
+  },
+  Mutation: {
+    createAuthor: (obj, args) => {
+      const id = String(authors.length + 1);
+      const {name, gender} = args;
+      const newAuthor = {
+        id,
+        info: {
+          name,
+          gender
+        }
+      }
+      authors.push(newAuthor);
+      return newAuthor;
+    }
+  }
+}
+```
+- Test
+```
+// Playground
+mutation craeteNewAuthor($authorName: String!, $authorGender: String!) {
+  createAuthor(name: $authorName, gender: $authorGender) {
+    id
+    info {
+      name
+      gender
+    }
+  }
+}
+// QUERY VARIABLES passed in the playground
+{
+  "authorName": "J.K Rowling",
+  "authorGender": "F"
+}
+// OUTPUT
+{
+  "data": {
+    "createAuthor": {
+      "id": "3",
+      "info": {
+        "name": "J.K Rowling",
+        "gender": "F"
+      }
+    }
+  }
+}
+```
+
+### PUT, PATCH / Update Mutation
+Same as above create mutation we could also create mutation to update existing data
+Note: only id is requires as user can update other values.
+```
+const typeDefs = `
+  ...
+  type Mutation {
+    createAuthor(name: String!, gender: String!): Author,
+    updateAuthor(id: ID!, name: String, gender: String, age: Int): Author 
+  }
+`;
+const resolvers = {
+  Query: {...},
+  Mutation: {
+    createAuthor: (obj, args) => {...},
+    updateAuthor: (obj, {id, name, gender, age}) => {
+      const author = authors.find(author => author.id === id)
+
+      if(author) {
+        const authorIndex = authors.indexOf(author)
+        if(name) author.info.name = name
+        if(gender) author.info.gender = gender
+        if(age) author.info.age = age
+
+        authors[authorIndex] = {id, info: author.info}
+        return {id, infor: author}
+      } else {
+        throw new Error('Author ID not found!');
+      }
+    }
+  }
+}
+// Playground
+mutation updateAuthor($id: ID!,$name: String, $gender: String, $age: Int) {
+  updateAuthor(id:$id, name: $name, gender: $gender, age: $age) {
+    id
+    info {
+      name
+      age
+      gender
+    }
+  }
+}
+// QUERY VARIABLES passed in the playground
+{
+  "id": "2",
+  "name": "F.Y Bowling",
+  "gender": "F",
+  "age": 20
+}
+// OUTPUT
+{
+  "data": {
+    "updateAuthor": {
+      "id": "2",
+      "info": {
+        "name": "F.Y Bowling",
+        "age": 20,
+        "gender": "F"
+      }
+    }
+  }
+}
+
+```
+
+### Delete Mutation
+```
+const typeDefs = `
+  ...
+  type DeleteMessage {
+    id: ID!
+    message: String
+  }
+  type Query {...}
+  type Mutation {
+    createAuthor(name: String!, gender: String!): Author,
+    updateAuthor(id: ID!, name: String, gender: String, age: Int): Author,
+    deleteAuthor(id: ID!) : DeleteMessage
+  }
+`;
+const resolvers = {
+  Query: { ... },
+  Mutation: {
+    createAuthor: (obj, args) => {
+      ...
+    },
+    updateAuthor: (obj, {id, name, gender, age}) => {
+      ...
+    },
+    deleteAuthor: (obj, { id }) => {
+      const author = authors.find(author => author.id === id)
+      if(author) {
+        const authorIndex = authors.indexOf(author)
+        authors.splice(authorIndex, 1)
+        return {id, message: 'Author with id ${id} is deleted successfully!'}
+      } else {
+        throw new Error('Author ID not found!');
+      }
+    }
+  }
+}
+// ``````p``````layground
+mutation deleteAuthor($id: ID!) {
+  deleteAuthor(id:$id) {
+    id
+    message
+  }
+}
+// QUERY VARIABLES passed in the playground
+{
+  "id": "1"
+}
+// OUTPUT
+{
+  "data": {
+    "deleteAuthor": {
+      "id": "1",
+      "message": "Author with id ${id} is deleted successfully!"
     }
   }
 }
