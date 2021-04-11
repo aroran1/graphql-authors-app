@@ -22,4 +22,5 @@ npm install express graphql-tools apollo-server-express graphql core-js
 - [Apollo Vs Express graphql](guides/apolloVsExpressgraphql.md)
 - [GraphQl queries and mutations](guides/queriesAndMutations.md)
 - [Realtime with subscriptions](guides/realtimeGraphql.md)
-- [Yoga](guides/graphqlYoga.md)
+- [Graphql Yoga](guides/graphqlYoga.md)
+- [GraphCool](guides/graphCool.md)
