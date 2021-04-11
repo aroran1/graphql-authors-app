@@ -1,4 +1,7 @@
 const authors = require('./authors');
+const { PubSub } = require('apollo-server-express');
+const { SUBSCRIPTION } = require('./constants');
+const pubsub = new PubSub();
 
 // resolvers
 // resolvers is the code that makes things happen
@@ -22,6 +25,7 @@ const resolvers = {
         }
       }
       authors.push(newAuthor);
+      pubsub.publish(SUBSCRIPTION.AUTHORS_TOPIC, { createAuthorWithSubscription: newAuthor });
       return newAuthor;
     },
     updateAuthor: (obj, {id, name, gender, age}) => {
@@ -48,6 +52,11 @@ const resolvers = {
       } else {
         throw new Error('Author ID not found!');
       }
+    }
+  },
+  Subscription: {
+    createAuthorWithSubscription: {
+      subscribe: () => pubsub.asyncIterator(SUBSCRIPTION.AUTHORS_TOPIC)
     }
   }
 }

@@ -25,6 +25,9 @@ const typeDefs = `
     createAuthor(name: String!, gender: String!): Author,
     updateAuthor(id: ID!, name: String, gender: String, age: Int): Author,
     deleteAuthor(id: ID!) : DeleteMessage
+  },
+  type Subscription {
+    createAuthorWithSubscription: Author
   }
 `;
 // Note in typeDefs > Mutation > updateAuthor > only id is requires as user can update other values

@@ -37,3 +37,10 @@ app.listen('4000', () => {
 ```
 
 Test - [http://localhost:4000/graphiql](http://localhost:4000/graphiql)
+
+Restructured the files:
+Instead of running the whoel application from server/index.js, its now been broken down to various files for ease.
+- Main - server/index.js
+- Mock Data - server/authors.js
+- Schema - TypeDefs - server/schema.js
+- Resolver - server/resolver.js
