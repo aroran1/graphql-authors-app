@@ -1,8 +1,8 @@
-# graphql-authors-app
+# GraphQL Authors App
 
-## Installs
+## Install
 ```
-npm install express graphql-tools apollo-server-express graphql core-js
+npm install express graphql-tools apollo-server-express graphql core-js 
 ```
 
 ## Run
