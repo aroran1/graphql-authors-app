@@ -24,3 +24,4 @@ npm install express graphql-tools apollo-server-express graphql core-js
 - [Realtime with subscriptions](guides/realtimeGraphql.md)
 - [Graphql Yoga](guides/graphqlYoga.md)
 - [GraphCool](guides/graphCool.md)
+- [Prisma](guides/prisma.md)
