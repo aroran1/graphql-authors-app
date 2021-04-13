@@ -37,3 +37,31 @@
       - rootTokens: 
         - rootToken1
         - rootToken2
+
+### Install
+[https://www.npmjs.com/package/graphcool](https://www.npmjs.com/package/graphcool) `npm install -g graphcool`
+- Run `graphcool init graphcool-books` to create a project
+  - types.graphql - schema definitation for data model
+  - graphcool.yml - configuration for graphcool tool - handles permissions permissions folder to authenticate
+    - create a new 
+  - src
+    - hello.graphql - resolvers schema
+    - hello.js - resolvers code
+- `graphcool add-template graphcool/templates/auth/email-password` this will add new packges / files to support the requested template
+  - bunch of pre-written templates are available from graphcool, ie `graphcool-books/src/email-password`
+  - graphcool-books/graphcool.yml is updated with those added templates which also need uncommenting in the code
+  - graphcool-books/types.graphql - same as above, merge the new commented type User with our original type User
+- graphcool comes with easy deployment on cloud or via docker
+  - for cloud run `graphcool deploy` and select below options:
+    - select a cluster closest to your location so it can work faster and deploy faster
+    ```
+      Shared Clusters:
+        ❯ shared-eu-west-1 
+        shared-ap-northeast-1 
+        shared-us-west-2 
+    ```
+    - Please choose the target name (prod) - hit enter to leave the environment name as `prod`
+    - Please choose the service name (graphcool-books)  - hit enter to leave the service name as `graphcool-books`
+    - Graph cool is no longer supported so it givies 404 on auth link :( https://www.graph.cool/
+The above by defaults add the authentication and object relation to the db objects out of the box for your api.
+Similar things are achieved by [Prima](https://www.prisma.io/) and its more flexible.
